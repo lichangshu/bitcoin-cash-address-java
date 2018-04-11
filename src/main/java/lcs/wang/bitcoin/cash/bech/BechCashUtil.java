@@ -164,13 +164,22 @@ public class BechCashUtil {
         return ret;
     }
 
-    public String encode(String prefix, byte[] payload) {
+    /**
+     * not do 8 -> 5 format
+     * 
+     * @param prefix
+     * @param payload
+     * @return
+     */
+    protected String encodePayload(String prefix, byte[] payload) {
         byte[] checksum = createChecksum(prefix, payload);
-        byte[] combined = cat(payload, checksum);
+        byte[][] combined = new byte[][] { payload, checksum };
         StringBuffer ret = new StringBuffer(prefix).append(':');
 
-        for (byte c : combined) {
-            ret.append(CHARSET.charAt(c));
+        for (byte[] cs : combined) {
+            for (byte c : cs) {
+                ret.append(CHARSET.charAt(c));
+            }
         }
 
         return ret.toString();
@@ -179,7 +188,7 @@ public class BechCashUtil {
     /**
      * Decode a cashaddr string.
      */
-    public Entry<String, byte[]> decode(String str, String default_prefix) {
+    public Entry<String, byte[]> cashAddress2payload(String str, String default_prefix) {
         // Go over the string and do some sanity checks.
         boolean lower = false, upper = false, hasNumber = false;
         int prefixSize = 0;
@@ -205,7 +214,7 @@ public class BechCashUtil {
                 // The separator cannot be the first character, cannot have number
                 // and there must not be 2 separators.
                 if (hasNumber || i == 0 || prefixSize != 0) {
-                    return null;
+                    throw new IllegalArgumentException("The separator cannot be the first character, cannot have number and there must not be 2 separators");
                 }
 
                 prefixSize = i;
@@ -213,12 +222,12 @@ public class BechCashUtil {
             }
 
             // We have an unexpected character.
-            return null;
+            throw new IllegalArgumentException("Have an unexpected character." + (char) c);
         }
 
         // We can't have both upper case and lowercase.
         if (upper && lower) {
-            return null;
+            throw new IllegalArgumentException("can't have both uppercase and lowercase");
         }
 
         // Get the prefix.
@@ -235,16 +244,17 @@ public class BechCashUtil {
         }
 
         // Decode values.
-        byte[] values = bchDecode(str.substring(prefixSize));
+        byte[] values = cashAddress2payload(str.substring(prefixSize));
 
         // Verify the checksum.
         if (!verifyChecksum(prefix.toString(), values)) {
-            return null;
+            throw new IllegalArgumentException("VerifyChecksum error");
         }
+        // 40 bit checksum
         return new SimpleEntry<>(prefix.toString(), Arrays.copyOf(values, values.length - 8));
     }
 
-    public byte[] bchDecode(String str) {
+    protected byte[] cashAddress2payload(String str) {
         byte[] values = new byte[str.length()];
         for (int i = 0; i < str.length(); ++i) {
             byte c = (byte) str.charAt(i);
@@ -259,39 +269,40 @@ public class BechCashUtil {
     }
 
     // ---------------------------
-    // 上面代码修改自 C++ 下面为添加
+    // 上面代码修改自 C++ 下面为添加 8 -> 5
     // ---------------------------
-    public byte[] transitionBchToBech32(String bch) {
-        byte[] b58 = Base58.decode(bch);
+    protected byte[] legacy2payload(String btc) {
+        byte[] b58 = Base58.decode(btc);
         if (b58.length != 25) {
             throw new IllegalArgumentException("Bitcoin address is 25 bytes !");
         }
         byte ver = b58[0];
         // 1 byte version + 20 byte data(sha160) + 4 bytes check code
         int len = 1 + 20;// 21
-        byte[] res = new byte[(1 + 20) * 8 / 5 + 1];// Math.ceil(len*8/5)
-        byte[] data = Arrays.copyOf(b58, len);
         // P2KH 0->0, P2SH 5 -> 8
-        data[0] = ver == 0 ? 0 : (ver == 5 ? 8 : ver);
+        b58[0] = ver == 0 ? 0 : (ver == 5 ? 8 : ver);
+        return bytes2payload(b58, 0, len);
+    }
 
-        for (int i = 0; i < data.length * 8; i++) {
-            int bit = this.getBitAt(data, i);
+    /**
+     * 8 -> 5
+     * 
+     * @param data
+     * @param off
+     * @param len
+     * @return
+     */
+    public byte[] bytes2payload(byte[] data, int off, int len) {
+        BitArray arr = new BitArray(data, off, len);
+        int nlen = (int) Math.ceil(len * 8 / 5.0);
+        byte[] res = new byte[nlen];
+        for (int i = 0; i < arr.bitLength(); i++) {
+            int bit = arr.get(i) ? 1 : 0;
             int k = i / 5;
             res[k] = (byte) (res[k] << 1 | bit);
         }
-        // (1 + 20) * 8 % 5 == 3 --> filling 5 bit, 5-3 = 2
-        res[res.length - 1] <<= 2;
+        // fill 0
+        res[res.length - 1] <<= (res.length * 5 - arr.bitLength());
         return res;
-    }
-
-    public int getBitAt(byte[] data, int position) {
-        if (data.length * 8 <= position) {
-            throw new ArrayIndexOutOfBoundsException(position);
-        }
-        int idx = position >> 3;// position / 8
-        position = idx << 3 ^ position;// position % 8
-        int dt = data[idx] << position & 0xFF;
-        dt = dt >>> (8 - 1);
-        return dt;
     }
 }
