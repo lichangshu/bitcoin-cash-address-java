@@ -6,90 +6,84 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
-import lcs.wang.bitcoin.cash.bech.BechCashUtil;
-
 public class BechCashUtilTest {
 
     BechCashUtil CASH = BechCashUtil.getInstance();
 
     @Test
-    public void testEncode() {
-        String code = CASH.encode("prefix", new byte[] {});
+    public void testEncodePayload() {
+        String code = CASH.bechEncode(new byte[] {}, "prefix");
         assertEquals("prefix:x64nx6hz", code);
-        code = CASH.encode("p", new byte[] {});
+        code = CASH.bechEncode(new byte[] {}, "p");
         assertEquals("p:gpf8m4h7", code);
-        byte[] res = CASH.bchDecode("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
-        code = CASH.encode("bitcoincash", res);
+        byte[] res = CASH.bechDecode("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
+        code = CASH.bechEncode(res, "bitcoincash");
         assertEquals("bitcoincash:qpzry9x8gf2tvdw0s3jn54khce6mua7lcw20ayyn", code);
-        res = CASH.bchDecode("555555555555555555555555555555555555555555555");
-        code = CASH.encode("bchreg", res);
+        res = CASH.bechDecode("555555555555555555555555555555555555555555555");
+        code = CASH.bechEncode(res, "bchreg");
         assertEquals("bchreg:555555555555555555555555555555555555555555555udxmlmrz", code);
     }
 
     @Test
-    public void testDecode() {
+    public void testCashAddress2payload() {
         String org = "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a";
-        Entry<String, byte[]> entry = CASH.decode(org, "");
+        Entry<String, byte[]> entry = CASH.bechDecode(org, "");
         System.out.println(entry.getKey());
         // System.out.println(entry.getValue());
-        String encode = CASH.encode("bitcoincash", entry.getValue());
+        String encode = CASH.bechEncode(entry.getValue(), "bitcoincash");
         assertEquals(org, encode);
     }
 
     @Test
-    public void testTransitionBchToBech32() {
+    public void testLegacy2payload() {
         {
             // 1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a
-            byte[] code = CASH.transitionBchToBech32("1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu");
-            String addr = CASH.encode("bitcoincash", code);
+            String addr = CASH.encodeCashAdrressByLegacy("1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu");
             assertEquals("bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a", addr);
         }
         {
-            byte[] code = CASH.transitionBchToBech32("1KXrWXciRDZUpQwQmuM1DbwsKDLYAYsVLR");
-            String addr = CASH.encode("bitcoincash", code);
+            String addr = CASH.encodeCashAdrressByLegacy("1KXrWXciRDZUpQwQmuM1DbwsKDLYAYsVLR");
             assertEquals("bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy", addr);
         }
 
         {
             // 16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r
-            byte[] code = CASH.transitionBchToBech32("16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb");
-            String addr = CASH.encode("bitcoincash", code);
+            String addr = CASH.encodeCashAdrressByLegacy("16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb");
             assertEquals("bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r", addr);
         }
         {
             // 3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq
-            byte[] code = CASH.transitionBchToBech32("3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC");
-            String addr = CASH.encode("bitcoincash", code);
+            String addr = CASH.encodeCashAdrressByLegacy("3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC");
             assertEquals("bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq", addr);
         }
         {
             // 3LDsS579y7sruadqu11beEJoTjdFiFCdX4 bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e
-            byte[] code = CASH.transitionBchToBech32("3LDsS579y7sruadqu11beEJoTjdFiFCdX4");
-            String addr = CASH.encode("bitcoincash", code);
+            String addr = CASH.encodeCashAdrressByLegacy("3LDsS579y7sruadqu11beEJoTjdFiFCdX4");
             assertEquals("bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e", addr);
         }
         {
             // 31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37
-            byte[] code = CASH.transitionBchToBech32("31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw");
-            String addr = CASH.encode("bitcoincash", code);
+            String addr = CASH.encodeCashAdrressByLegacy("31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw");
             assertEquals("bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37", addr);
+        }
+        {
+            // 31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37
+            String addr = CASH.encodeCashAdrressByLegacy("mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn");
+            assertEquals("bchtest:qqjr7yu573z4faxw8ltgvjwpntwys08fysk07zmvce", addr);
+        }
+        {
+            // 31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37
+            String addr = CASH.encodeCashAdrressByLegacy("2MzQwSSnBHWHqSAqtTVQ6v47XtaisrJa1Vc");
+            assertEquals("bchtest:pp8f7ww2g6y07ypp9r4yendrgyznysc9kqxh6acwu3", addr);
         }
     }
 
     @Test
-    public void bit() {
-        System.out.println(Integer.toBinaryString(-20));
-        for (int i = 0; i < 8; i++) {
-            int bit = CASH.getBitAt(new byte[] { -20 }, i);
-            char b = Integer.toBinaryString(-20).charAt(24 + i);
-            assertEquals("" + bit, "" + b);
-        }
-        System.out.println("0000" + Integer.toBinaryString(8));
-        for (int i = 8; i < 16; i++) {
-            int bit = CASH.getBitAt(new byte[] { -20, 8 }, i);
-            char b = ("0000" + Integer.toBinaryString(8)).charAt(i % 8);
-            assertEquals("" + bit, "" + b);
-        }
+    public void testPayload2legacy() {
+        byte[] data = new byte[] { 0, 4, 127, -120, 56, 88, 1, -8, -9 };
+        byte[] target = CASH.payloadEncode(data, 0, data.length);
+        byte[] res = CASH.payloadDecode(target, 0, target.length);
+        assertEquals(new BitArray(data).toString(), new BitArray(res).toString());
     }
 
 }
