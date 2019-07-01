@@ -1,6 +1,6 @@
 # New Address format for Bitcoin Cash
 
-The format doc : [cashaddr-doc](https://github.com/bitcoincashorg/spec/blob/master/cashaddr.md)
+The format doc : [cashaddr-doc](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
 
 This code is transition c++ to java, and c++ code is [cashaddr.cpp](https://github.com/Bitcoin-ABC/bitcoin-abc/blob/6c9c42ccb093820d5dd6f32f02c657c25ce5f823/src/cashaddr.cpp)
 
