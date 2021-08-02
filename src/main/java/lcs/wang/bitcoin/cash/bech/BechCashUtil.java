@@ -68,7 +68,7 @@ public class BechCashUtil {
             /**
              * We want to update `c` to correspond to a polynomial with one extra term. If the initial value of `c` consists of the coefficients of c(x) = f(x) mod g(x), we modify it to
              * correspond to c'(x) = (f(x) * x + d) mod g(x), where d is the next input to process.
-             * 
+             *
              * <pre>
              * Simplifying:
              * c'(x) = (f(x) * x + d) mod g(x)
@@ -166,14 +166,14 @@ public class BechCashUtil {
 
     /**
      * not do 8 -> 5 format
-     * 
+     *
      * @param prefix
      * @param payload
      * @return
      */
     public String bechEncode(byte[] payload, String prefix) {
         byte[] checksum = createChecksum(prefix, payload);
-        byte[][] combined = new byte[][] { payload, checksum };
+        byte[][] combined = new byte[][]{payload, checksum};
         StringBuffer ret = new StringBuffer(prefix).append(':');
 
         for (byte[] cs : combined) {
@@ -271,9 +271,10 @@ public class BechCashUtil {
     // ---------------------------
     // 上面代码修改自 C++ 下面为添加
     // ---------------------------
+
     /**
      * bch old address to new address (payload)
-     * 
+     *
      * @param btc
      * @return
      */
@@ -315,9 +316,6 @@ public class BechCashUtil {
 
     /**
      * 5 -> 8
-     * 
-     * @param btc
-     * @return
      */
     public byte[] payloadDecode(byte[] payload, int off, int len) {
         BitArray from = new BitArray(payload, off, len);
@@ -336,7 +334,7 @@ public class BechCashUtil {
 
     /**
      * 8 -> 5
-     * 
+     *
      * @param data
      * @param off
      * @param len

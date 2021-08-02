@@ -101,11 +101,11 @@ public class BitArray {
         return this.toString(" ");
     }
 
-    public String toString(String spide) {
+    public String toString(String separator) {
         StringBuffer buf = new StringBuffer();
         for (byte b : this.data) {
             String bn = "00000000" + Integer.toBinaryString(b);
-            buf.append(bn.substring(bn.length() - 8)).append(spide);
+            buf.append(bn.substring(bn.length() - 8)).append(separator);
         }
         return buf.toString();
     }

@@ -27,7 +27,7 @@ import java.util.Arrays;
  * Note that this is not the same base58 as used by Flickr, which you may find
  * referenced around the Internet.
  * <p>
- * You may want to consider working with {@link VersionedChecksummedBytes}
+ * You may want to consider working with VersionedChecksummedBytes
  * instead, which adds support for testing the prefix and suffix bytes commonly
  * found in addresses.
  * <p>
@@ -109,7 +109,7 @@ public class Base58 {
 	 * @param input
 	 *            the base58-encoded string to decode
 	 * @return the decoded data bytes
-	 * @throws AddressFormatException
+	 * @throws IllegalArgumentException
 	 *             if the given string is not a valid base58 string
 	 */
 	public static byte[] decode(String input) throws IllegalArgumentException {
@@ -162,7 +162,7 @@ public class Base58 {
 	 *            the base58-encoded string to decode (which should include the
 	 *            checksum)
 	 * @throws NoSuchAlgorithmException
-	 * @throws AddressFormatException
+	 * @throws IllegalArgumentException
 	 *             if the input is not base 58 or the checksum does not validate.
 	 */
 	public static byte[] decodeChecked(String input) throws IllegalArgumentException, NoSuchAlgorithmException {
