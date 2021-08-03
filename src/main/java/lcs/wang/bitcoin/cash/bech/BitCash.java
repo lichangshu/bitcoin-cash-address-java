@@ -7,38 +7,12 @@ import java.util.Map.Entry;
 // C++ conversion to java
 // DOC : https://github.com/bitcoincashorg/spec/blob/master/cashaddr.md
 // CODE : https://github.com/Bitcoin-ABC/bitcoin-abc/blob/6c9c42ccb093820d5dd6f32f02c657c25ce5f823/src/cashaddr.cpp
-public class BechCashUtil {
-    public static final String CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+public class BitCash {
 
-    /**
-     * The cashaddr character set for decoding.
-     */
-    public static final byte[] CHARSET_REV = { // 127
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 16+
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 2
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 3
-            15, -1, 10, 17, 21, 20, 26, 30, +7, +5, -1, -1, -1, -1, -1, -1, // 4
-            -1, 29, -1, 24, 13, 25, +9, +8, 23, -1, 18, 22, 31, 27, 19, -1, // 5
-            +1, +0, +3, 16, 11, 28, 12, 14, +6, +4, +2, -1, -1, -1, -1, -1, // 6
-            -1, 29, -1, 24, 13, 25, +9, +8, 23, -1, 18, 22, 31, 27, 19, -1, // 7
-            +1, +0, +3, 16, 11, 28, 12, 14, 6, 4, 2, -1, -1, -1, -1, -1 ////// 8
-    };
-
-    private BechCashUtil() {
+    private BitCash() {
     }
 
-    public static final BechCashUtil instance = new BechCashUtil();
-
-    public static BechCashUtil getInstance() {
-        return instance;
-    }
-
-    public byte[] cat(byte[] x, byte[] data) {
-        byte[] dest = new byte[x.length + data.length];
-        System.arraycopy(x, 0, dest, 0, x.length);
-        System.arraycopy(data, 0, dest, x.length, data.length);
-        return dest;
-    }
+    public static final BitCash CASH = new BitCash();
 
     /**
      * This function will compute what 8 5-bit values to XOR into the last 8 input values, in order to make the checksum 0. These 8 values are packed together in a single 40-bit
@@ -147,12 +121,11 @@ public class BechCashUtil {
     }
 
     public boolean verifyChecksum(String prefix, byte[] payload) {
-        return polyMod(cat(expandPrefix(prefix), payload)) == 0;
+        return polyMod(Bech32.concat(expandPrefix(prefix), payload)) == 0;
     }
 
     public byte[] createChecksum(String prefix, byte[] payload) {
-        byte[] enc = cat(cat(expandPrefix(prefix), payload), //
-                new byte[8]);// Append 8 zeroes.
+        byte[] enc = Bech32.concat(expandPrefix(prefix), payload, new byte[8]);// Append 8 zeroes.
         // Determine what to XOR into those 8 zeroes.
         long mod = polyMod(enc);
         byte[] ret = new byte[8];
@@ -164,6 +137,11 @@ public class BechCashUtil {
         return ret;
     }
 
+    public String bechEncode(byte[] payload, Env prefix) {
+        byte[] checksum = createChecksum(prefix.cashPrefix(), payload);
+        return prefix.cashPrefix() + ":" + Bech32.BECH.bechEncode(payload, checksum);
+    }
+
     /**
      * not do 8 -> 5 format
      *
@@ -173,16 +151,7 @@ public class BechCashUtil {
      */
     public String bechEncode(byte[] payload, String prefix) {
         byte[] checksum = createChecksum(prefix, payload);
-        byte[][] combined = new byte[][]{payload, checksum};
-        StringBuffer ret = new StringBuffer(prefix).append(':');
-
-        for (byte[] cs : combined) {
-            for (byte c : cs) {
-                ret.append(CHARSET.charAt(c));
-            }
-        }
-
-        return ret.toString();
+        return prefix + ":" + Bech32.BECH.bechEncode(payload, checksum);
     }
 
     /**
@@ -244,7 +213,7 @@ public class BechCashUtil {
         }
 
         // Decode values.
-        byte[] values = bechDecode(str.substring(prefixSize));
+        byte[] values = Bech32.BECH.bechDecode(str.substring(prefixSize));
 
         // Verify the checksum.
         if (!verifyChecksum(prefix.toString(), values)) {
@@ -252,20 +221,6 @@ public class BechCashUtil {
         }
         // 40 bit checksum
         return new SimpleEntry<>(prefix.toString(), Arrays.copyOf(values, values.length - 8));
-    }
-
-    protected byte[] bechDecode(String str) {
-        byte[] values = new byte[str.length()];
-        for (int i = 0; i < str.length(); ++i) {
-            byte c = (byte) str.charAt(i);
-            // We have an invalid char in there.
-            if (c > 127 || CHARSET_REV[c] == -1) {
-                throw new IllegalArgumentException("Char at 0-127 ! But " + (int) c);
-            }
-
-            values[i] = CHARSET_REV[c];
-        }
-        return values;
     }
 
     // ---------------------------

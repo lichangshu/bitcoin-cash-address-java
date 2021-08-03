@@ -2,14 +2,13 @@ package lcs.wang.bitcoin.cash.bech;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.Map.Entry;
 
 import org.junit.Test;
 
-public class BechCashUtilTest {
+public class BitCashTest {
 
-    BechCashUtil CASH = BechCashUtil.getInstance();
+    BitCash CASH = BitCash.CASH;
 
     @Test
     public void testEncodePayload() {
@@ -17,10 +16,10 @@ public class BechCashUtilTest {
         assertEquals("prefix:x64nx6hz", code);
         code = CASH.bechEncode(new byte[]{}, "p");
         assertEquals("p:gpf8m4h7", code);
-        byte[] res = CASH.bechDecode("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
+        byte[] res = Bech32.BECH.bechDecode("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
         code = CASH.bechEncode(res, "bitcoincash");
         assertEquals("bitcoincash:qpzry9x8gf2tvdw0s3jn54khce6mua7lcw20ayyn", code);
-        res = CASH.bechDecode("555555555555555555555555555555555555555555555");
+        res = Bech32.BECH.bechDecode("555555555555555555555555555555555555555555555");
         code = CASH.bechEncode(res, "bchreg");
         assertEquals("bchreg:555555555555555555555555555555555555555555555udxmlmrz", code);
     }

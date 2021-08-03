@@ -69,7 +69,8 @@ public class Bech32 {
     }
 
     /**
-     *  8 --> 5
+     * 8 --> 5
+     *
      * @param data
      * @return
      */
@@ -114,5 +115,19 @@ public class Bech32 {
             target[k / 8] = (byte) ((t << 1) | (v >> i2 & 1));
         }
         return target;
+    }
+
+    public static byte[] concat(byte[]... data) {
+        int len = 0;
+        for (byte[] datum : data) {
+            len += datum.length;
+        }
+        byte[] dest = new byte[len];
+        for (int i = 0, index = 0; i < data.length; i++) {
+            byte[] it = data[i];
+            System.arraycopy(it, 0, dest, index, it.length);
+            index += it.length;
+        }
+        return dest;
     }
 }
