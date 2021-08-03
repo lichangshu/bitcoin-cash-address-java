@@ -304,7 +304,7 @@ public class BechCashUtil {
         } else {
             throw new IllegalArgumentException("unsupport format");
         }
-        byte[] payload = payloadEncode(b58, 0, len);
+        byte[] payload = Bech32.BECH.payloadEncode(Arrays.copyOf(b58, len));
         if (ver == 0) {
             prefix = "bitcoincash";
         } else if (ver == 0x6F) {
@@ -314,44 +314,4 @@ public class BechCashUtil {
         return address;
     }
 
-    /**
-     * 5 -> 8
-     */
-    public byte[] payloadDecode(byte[] payload, int off, int len) {
-        BitArray from = new BitArray(payload, off, len);
-        int nlen = len * 5 / 8;// int
-        BitArray to = new BitArray(new byte[nlen]);
-        for (int i = 0, j = i; i < to.bitLength(); i++, j++) {
-            if (i % 5 == 0) {
-                j += 3;
-            }
-            if (from.get(j)) {
-                to.set(i);
-            }
-        }
-        return to.toArray();
-    }
-
-    /**
-     * 8 -> 5
-     *
-     * @param data
-     * @param off
-     * @param len
-     * @return
-     */
-    public byte[] payloadEncode(byte[] data, int off, int len) {
-        BitArray from = new BitArray(data, off, len);
-        int nlen = (int) Math.ceil(len * 8 / 5.0);
-        BitArray to = new BitArray(new byte[nlen]);
-        for (int i = 0, j = i; i < from.bitLength(); i++, j++) {
-            if (i % 5 == 0) {// skip (8 - 5)
-                j += 3;
-            }
-            if (from.get(i)) {
-                to.set(j);
-            }
-        }
-        return to.toArray();
-    }
 }

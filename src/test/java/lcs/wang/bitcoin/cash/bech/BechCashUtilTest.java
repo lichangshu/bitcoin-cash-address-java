@@ -1,7 +1,8 @@
 package lcs.wang.bitcoin.cash.bech;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.Map.Entry;
 
 import org.junit.Test;
@@ -12,9 +13,9 @@ public class BechCashUtilTest {
 
     @Test
     public void testEncodePayload() {
-        String code = CASH.bechEncode(new byte[] {}, "prefix");
+        String code = CASH.bechEncode(new byte[]{}, "prefix");
         assertEquals("prefix:x64nx6hz", code);
-        code = CASH.bechEncode(new byte[] {}, "p");
+        code = CASH.bechEncode(new byte[]{}, "p");
         assertEquals("p:gpf8m4h7", code);
         byte[] res = CASH.bechDecode("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
         code = CASH.bechEncode(res, "bitcoincash");
@@ -76,14 +77,6 @@ public class BechCashUtilTest {
             String addr = CASH.encodeCashAdrressByLegacy("2MzQwSSnBHWHqSAqtTVQ6v47XtaisrJa1Vc");
             assertEquals("bchtest:pp8f7ww2g6y07ypp9r4yendrgyznysc9kqxh6acwu3", addr);
         }
-    }
-
-    @Test
-    public void testPayload2legacy() {
-        byte[] data = new byte[] { 0, 4, 127, -120, 56, 88, 1, -8, -9 };
-        byte[] target = CASH.payloadEncode(data, 0, data.length);
-        byte[] res = CASH.payloadDecode(target, 0, target.length);
-        assertEquals(new BitArray(data).toString(), new BitArray(res).toString());
     }
 
 }
